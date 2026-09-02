@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}Image Converter{% endblock %}
+{% block content %}
+{{ page_head('.IMG', 'Image Converter', 'image') }}
+<form method="post" enctype="multipart/form-data">
+  <label for="images">Gambar (bisa pilih lebih dari 1)</label>
+  <input type="file" id="images" name="images" accept="image/*" multiple required>
+
+  <label for="target_format">Format tujuan</label>
+  <select id="target_format" name="target_format">
+    <option value="jpg">JPG</option>
+    <option value="png">PNG</option>
+    <option value="webp">WEBP</option>
+    <option value="tiff">TIFF</option>
+    <option value="bmp">BMP</option>
+    <option value="gif">GIF</option>
+  </select>
+
+  <label for="filename">Nama file (opsional, dipakai kalau cuma 1 hasil / buat nama .zip)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Convert</button>
+</form>
+
+{% if result %}
+<div class="result">
+  <h2>Hasil</h2>
+  <div class="thumb-grid">
+    {% for item in result.files %}
+    <div class="thumb">
+      {% if item.previewable %}
+      <a href="{{ item.data_uri }}" target="_blank"><img src="{{ item.data_uri }}" alt="{{ item.name }}"></a>
+      {% else %}
+      <div class="thumb-placeholder">{{ item.name.rsplit('.', 1)[-1] | upper }}</div>
+      {% endif %}
+      <span class="thumb-name">{{ item.name }}</span>
+      <a class="btn-download" href="{{ item.data_uri }}" download="{{ item.name }}">Download</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% if result.zip %}
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.zip.data_uri }}" download="{{ result.zip.name }}">Download semua (.zip)</a>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

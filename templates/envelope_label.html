@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}Label Amplop{% endblock %}
+{% block content %}
+{{ page_head('.LBL', 'Label Amplop', 'label') }}
+<p>Satu label per baris — cocok buat label penerima/petugas yang ditempel di amplop. Teks otomatis ditulis vertikal, 1 label per halaman PDF.</p>
+<form method="post">
+  <label for="labels">Daftar label</label>
+  <textarea id="labels" name="labels" placeholder="Khatib&#10;Muazin&#10;Bilal" required>{{ request.form.get('labels', 'Khatib\nMuazin\nBilal') }}</textarea>
+
+  <label for="preset">Ukuran amplop</label>
+  <select id="preset" onchange="
+    if (this.value) {
+      const [w, h] = this.value.split('x');
+      document.getElementById('width_mm').value = w;
+      document.getElementById('height_mm').value = h;
+    }
+  ">
+    {% for key, (label, w, h) in presets.items() %}
+    <option value="{{ w }}x{{ h }}" {{ 'selected' if key == 'panjang' }}>{{ label }}</option>
+    {% endfor %}
+    <option value="">Custom</option>
+  </select>
+
+  <div class="row">
+    <div>
+      <label for="width_mm">Lebar (mm)</label>
+      <input type="number" id="width_mm" name="width_mm" value="92" min="10" step="0.5" required>
+    </div>
+    <div>
+      <label for="height_mm">Tinggi (mm)</label>
+      <input type="number" id="height_mm" name="height_mm" value="165" min="10" step="0.5" required>
+    </div>
+  </div>
+
+  <label for="filename">Nama file (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Buat PDF</button>
+</form>
+
+{% if result %}
+<div class="result">
+  <h2>Hasil</h2>
+  <iframe class="pdf-frame" src="{{ result.data_uri }}"></iframe>
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.data_uri }}" target="_blank">Buka di tab baru</a>
+    <a class="btn-download" href="{{ result.data_uri }}" download="{{ result.filename }}">Download PDF</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

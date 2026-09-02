@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}Images to PDF{% endblock %}
+{% block content %}
+{{ page_head('.PDF', 'Gambar ke PDF', 'images-to-pdf') }}
+{% include "pdf/_tabs.html" %}
+<form method="post" enctype="multipart/form-data">
+  <label>Gambar (bisa pilih lebih dari 1)</label>
+  <input type="file" name="images" accept="image/*" multiple required>
+
+  <label for="filename">Nama file (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Convert ke PDF</button>
+</form>
+{% include "pdf/_pdf_preview.html" %}
+{% endblock %}

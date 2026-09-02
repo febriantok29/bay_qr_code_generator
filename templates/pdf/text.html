@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}PDF Extract Text{% endblock %}
+{% block content %}
+{{ page_head('.PDF', 'Ambil Teks', 'text') }}
+{% include "pdf/_tabs.html" %}
+<form method="post" enctype="multipart/form-data">
+  <label>File PDF sumber teks</label>
+  <input type="file" name="pdf" accept=".pdf" required>
+
+  <label for="filename">Nama file (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Ambil Semua Teks</button>
+</form>
+
+{% if result %}
+<div class="result">
+  <h2>Hasil</h2>
+  <pre class="text-preview">{{ result.text }}</pre>
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.data_uri }}" download="{{ result.filename }}">Download .txt</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

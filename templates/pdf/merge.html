@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}PDF Merge{% endblock %}
+{% block content %}
+{{ page_head('.PDF', 'Gabung PDF', 'merge') }}
+{% include "pdf/_tabs.html" %}
+<form method="post" enctype="multipart/form-data">
+  <label>File PDF yang mau digabung (minimal 2, urutan sesuai urutan dipilih)</label>
+  <input type="file" name="pdfs" accept=".pdf" multiple required>
+
+  <label for="filename">Nama file (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Gabung Jadi 1 PDF</button>
+</form>
+{% include "pdf/_pdf_preview.html" %}
+{% endblock %}

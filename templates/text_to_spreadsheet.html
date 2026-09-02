@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}Text ke Spreadsheet{% endblock %}
+{% block content %}
+{{ page_head('.XLS', 'Text ke Spreadsheet', 'sheet') }}
+<p>Paste teks hasil export transaksi bank (format list mutasi), lalu pilih format output.</p>
+<form method="post">
+  <label for="raw_text">Teks transaksi</label>
+  <textarea id="raw_text" name="raw_text" required>{{ request.form.get('raw_text', '') }}</textarea>
+
+  <label for="filename">Nama file (opsional, dipakai buat CSV & XLSX)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Parse</button>
+</form>
+
+{% if result %}
+<div class="result">
+  <h2>Hasil ({{ result.records|length }} transaksi)</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Tanggal</th><th>Initial</th><th>Deskripsi</th><th>Nominal</th><th>Tipe</th></tr></thead>
+      <tbody>
+        {% for r in result.records %}
+        <tr><td>{{ r.date }}</td><td>{{ r.initial }}</td><td>{{ r.description }}</td><td>{{ r.amount_raw }}</td><td>{{ r.type }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.csv_data_uri }}" download="{{ result.csv_filename }}">Download CSV</a>
+    {% if result.xlsx_data_uri %}
+    <a class="btn-download" href="{{ result.xlsx_data_uri }}" download="{{ result.xlsx_filename }}">Download XLSX</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

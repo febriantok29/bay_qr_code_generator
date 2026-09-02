@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}PDF Info{% endblock %}
+{% block content %}
+{{ page_head('.PDF', 'Info PDF', 'info') }}
+{% include "pdf/_tabs.html" %}
+<form method="post" enctype="multipart/form-data">
+  <label>File PDF</label>
+  <input type="file" name="pdf" accept=".pdf" required>
+  <button type="submit">Lihat Info</button>
+</form>
+{% if info %}
+<table>
+  <tr><th>File</th><td>{{ info_filename }}</td></tr>
+  <tr><th>Halaman</th><td>{{ info.pages }}</td></tr>
+  <tr><th>Judul</th><td>{{ info.title or '(none)' }}</td></tr>
+  <tr><th>Author</th><td>{{ info.author or '(none)' }}</td></tr>
+  <tr><th>Subject</th><td>{{ info.subject or '(none)' }}</td></tr>
+  <tr><th>Creator</th><td>{{ info.creator or '(none)' }}</td></tr>
+  <tr><th>Producer</th><td>{{ info.producer or '(none)' }}</td></tr>
+  <tr><th>Dibuat</th><td>{{ info.creation_date or '(none)' }}</td></tr>
+  <tr><th>Diubah</th><td>{{ info.modification_date or '(none)' }}</td></tr>
+</table>
+{% endif %}
+{% endblock %}

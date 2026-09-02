@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}CSV Merger{% endblock %}
+{% block content %}
+{{ page_head('.CSV', 'CSV Merger', 'csv') }}
+<p>Upload beberapa file CSV mutasi (format Blu by BCA Digital), hasilnya digabung, difilter, dan diurutkan berdasarkan tanggal.</p>
+<form method="post" enctype="multipart/form-data">
+  <label for="csv_files">File CSV (bisa pilih lebih dari 1)</label>
+  <input type="file" id="csv_files" name="csv_files" accept=".csv" multiple required>
+
+  <label for="filename">Nama file (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Merge</button>
+</form>
+
+{% if result %}
+<div class="result">
+  <h2>Hasil</h2>
+  <p>Menampilkan {{ result.shown_rows }} dari {{ result.total_rows }} baris.</p>
+  <div class="table-scroll">{{ result.preview_html | safe }}</div>
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.data_uri }}" download="{{ result.filename }}">Download CSV lengkap</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

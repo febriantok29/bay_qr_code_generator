@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tool_card, page_head %}
+{% block title %}PDF Utils{% endblock %}
+{% block content %}
+{{ page_head('.PDF', 'PDF Utils', 'pdf') }}
+<div class="tool-grid">
+  {{ tool_card(url_for('pdf_merge'), 'merge', 'Gabung PDF', 'Gabung beberapa file PDF jadi satu file.', 'merge') }}
+  {{ tool_card(url_for('pdf_split'), 'split', 'Pecah PDF', 'Pecah 1 PDF jadi beberapa file per N halaman.', 'split') }}
+  {{ tool_card(url_for('pdf_extract'), 'extract', 'Ambil Halaman', 'Ambil halaman tertentu jadi PDF baru.', 'extract') }}
+  {{ tool_card(url_for('pdf_rotate'), 'rotate', 'Putar Halaman', 'Putar orientasi halaman tertentu.', 'rotate') }}
+  {{ tool_card(url_for('pdf_delete'), 'delete', 'Hapus Halaman', 'Buang halaman tertentu dari PDF.', 'trash') }}
+  {{ tool_card(url_for('pdf_extract_text'), 'text', 'Ambil Teks', 'Ambil semua teks dalam PDF jadi file .txt.', 'text') }}
+  {{ tool_card(url_for('pdf_info'), 'info', 'Info PDF', 'Lihat metadata & ukuran tiap halaman.', 'info') }}
+  {{ tool_card(url_for('pdf_images_to_pdf'), 'img→pdf', 'Gambar ke PDF', 'Gabung beberapa gambar jadi satu PDF.', 'images-to-pdf') }}
+  {{ tool_card(url_for('pdf_to_images'), 'pdf→img', 'PDF ke Gambar', 'Render tiap halaman PDF jadi file gambar.', 'pdf-to-images') }}
+</div>
+{% endblock %}

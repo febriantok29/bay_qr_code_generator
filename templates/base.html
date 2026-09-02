@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}bimbim utilities{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% from "_icons.html" import icon %}
+<header>
+  <a class="brand" href="{{ url_for('index') }}">
+    <span class="brand-name">bimbim</span>
+    <span class="brand-tag mono">.utilities</span>
+  </a>
+  <nav>
+    <a href="{{ url_for('qr_page') }}" class="{{ 'active' if request.endpoint == 'qr_page' }}">{{ icon('qr') }} QR</a>
+    <a href="{{ url_for('csv_merger_page') }}" class="{{ 'active' if request.endpoint == 'csv_merger_page' }}">{{ icon('csv') }} CSV Merger</a>
+    <a href="{{ url_for('image_converter_page') }}" class="{{ 'active' if request.endpoint == 'image_converter_page' }}">{{ icon('image') }} Image Converter</a>
+    <a href="{{ url_for('envelope_label_page') }}" class="{{ 'active' if request.endpoint == 'envelope_label_page' }}">{{ icon('label') }} Label Amplop</a>
+    <a href="{{ url_for('pdf_utils_page') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('pdf_') }}">{{ icon('pdf') }} PDF Utils</a>
+    <a href="{{ url_for('remove_bg_page') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('remove_bg') }}">{{ icon('layers') }} Remove BG</a>
+    <a href="{{ url_for('text_to_spreadsheet_page') }}" class="{{ 'active' if request.endpoint == 'text_to_spreadsheet_page' }}">{{ icon('sheet') }} Spreadsheet</a>
+    <a href="{{ url_for('webm_to_mp4_page') }}" class="{{ 'active' if request.endpoint == 'webm_to_mp4_page' }}">{{ icon('film') }} Webm→Mp4</a>
+  </nav>
+</header>
+<main>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

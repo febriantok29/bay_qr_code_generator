@@ -1,0 +1,19 @@
+{% if result %}
+<div class="result">
+  <h2>Hasil ({{ result.files|length }} file)</h2>
+  <ul class="file-list">
+    {% for item in result.files %}
+    <li>
+      <span>{{ item.name }}</span>
+      <span class="file-meta">{{ item.size }}</span>
+      <a class="btn-download" href="{{ item.data_uri }}" download="{{ item.name }}">Download</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if result.zip %}
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.zip.data_uri }}" download="{{ result.zip.name }}">Download semua (.zip)</a>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
