@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import tool_card %}
+{% block title %}bimbim utilities{% endblock %}
+{% block content %}
+<h1>bimbim utilities</h1>
+<p>Kumpulan tool file sehari-hari, dipakai langsung dari browser.</p>
+<div class="tool-grid">
+  {{ tool_card(url_for('qr_page'), '.QR', 'QR Code Generator', 'Bikin QR dari teks/URL, bisa banyak sekaligus.', 'qr') }}
+  {{ tool_card(url_for('csv_merger_page'), '.CSV', 'CSV Merger', 'Gabung & rapikan mutasi CSV jadi 1 file.', 'csv') }}
+  {{ tool_card(url_for('image_converter_page'), '.IMG', 'Image Converter', 'Convert format gambar secara batch.', 'image') }}
+  {{ tool_card(url_for('envelope_label_page'), '.LBL', 'Label Amplop', 'Cetak label amplop, pilih ukuran atau custom.', 'label') }}
+  {{ tool_card(url_for('pdf_utils_page'), '.PDF', 'PDF Utils', 'Merge, split, rotate, dan lainnya.', 'pdf') }}
+  {{ tool_card(url_for('remove_bg_page'), '.BG', 'Remove Background', 'Ganti warna background gambar.', 'layers') }}
+  {{ tool_card(url_for('text_to_spreadsheet_page'), '.XLS', 'Text ke Spreadsheet', 'Parse teks transaksi jadi CSV/XLSX.', 'sheet') }}
+  {{ tool_card(url_for('webm_to_mp4_page'), '.MP4', 'Webm ke MP4', 'Convert video webm ke mp4 lewat ffmpeg.', 'film') }}
+</div>
+{% endblock %}

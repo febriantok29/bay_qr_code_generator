@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}PDF to Images{% endblock %}
+{% block content %}
+{{ page_head('.PDF', 'PDF ke Gambar', 'pdf-to-images') }}
+{% include "pdf/_tabs.html" %}
+<p>Butuh Poppler terpasang di server.</p>
+<form method="post" enctype="multipart/form-data">
+  <label>File PDF</label>
+  <input type="file" name="pdf" accept=".pdf" required>
+  <div class="row">
+    <div>
+      <label>Format</label>
+      <select name="fmt">
+        <option value="PNG">PNG</option>
+        <option value="JPEG">JPEG</option>
+        <option value="TIFF">TIFF</option>
+      </select>
+    </div>
+    <div>
+      <label>DPI</label>
+      <input type="number" name="dpi" value="150" min="50" max="600">
+    </div>
+  </div>
+
+  <label for="filename">Nama file .zip (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Convert ke Images</button>
+</form>
+
+{% if result %}
+<div class="result">
+  <h2>Hasil</h2>
+  <div class="thumb-grid">
+    {% for item in result.files %}
+    <div class="thumb">
+      {% if item.previewable %}
+      <a href="{{ item.data_uri }}" target="_blank"><img src="{{ item.data_uri }}" alt="{{ item.name }}"></a>
+      {% else %}
+      <div class="thumb-placeholder">{{ item.name.rsplit('.', 1)[-1] | upper }}</div>
+      {% endif %}
+      <span class="thumb-name">{{ item.name }}</span>
+      <a class="btn-download" href="{{ item.data_uri }}" download="{{ item.name }}">Download</a>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.zip.data_uri }}" download="{{ result.zip.name }}">Download semua (.zip)</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

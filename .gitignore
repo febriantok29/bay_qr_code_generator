@@ -39,6 +39,7 @@ Thumbs.db
 
 # Project specific
 export/
+import/
 _temp_*.png
 *.log
 

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}PDF Split{% endblock %}
+{% block content %}
+{{ page_head('.PDF', 'Pecah PDF', 'split') }}
+{% include "pdf/_tabs.html" %}
+<form method="post" enctype="multipart/form-data">
+  <label>File PDF yang mau dipecah</label>
+  <input type="file" name="pdf" accept=".pdf" required>
+  <label>Jumlah halaman per file hasil (contoh: 1 = tiap halaman jadi file terpisah)</label>
+  <input type="number" name="pages_per_file" value="1" min="1" required>
+
+  <label for="filename">Nama file .zip (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Pecah PDF</button>
+</form>
+{% include "pdf/_file_list.html" %}
+{% endblock %}

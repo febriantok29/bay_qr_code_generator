@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% from "pdf/_page_grid_rotate.html" import page_grid_rotate %}
+{% block title %}PDF Rotate{% endblock %}
+{% block content %}
+{{ page_head('.PDF', 'Putar Halaman', 'rotate') }}
+{% include "pdf/_tabs.html" %}
+
+{% if picker %}
+  {{ page_grid_rotate(picker, url_for('pdf_rotate'), 'Putar Halaman Terpilih') }}
+{% else %}
+<form method="post" enctype="multipart/form-data">
+  <label>File PDF</label>
+  <input type="file" name="pdf" accept=".pdf" required>
+  <label>Halaman:sudut (opsional di sini — bisa juga klik-pilih setelah "Lihat Halaman")</label>
+  <input type="text" name="rotate" placeholder="1:90 3:180">
+  <label>Nama file (opsional, cuma dipakai kalau klik "Putar Langsung")</label>
+  <input type="text" name="filename" placeholder="Kosongkan untuk nama otomatis">
+  <div class="result-actions">
+    <button type="submit" name="action" value="preview">Lihat Halaman</button>
+    <button type="submit" name="action" value="process">Putar Langsung</button>
+  </div>
+</form>
+{% endif %}
+{% include "pdf/_pdf_preview.html" %}
+{% endblock %}

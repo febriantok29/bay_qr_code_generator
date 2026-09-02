@@ -1,0 +1,11 @@
+<div class="tabs">
+  <a href="{{ url_for('pdf_merge') }}" class="{{ 'active' if request.endpoint == 'pdf_merge' }}">Gabung PDF</a>
+  <a href="{{ url_for('pdf_split') }}" class="{{ 'active' if request.endpoint == 'pdf_split' }}">Pecah PDF</a>
+  <a href="{{ url_for('pdf_extract') }}" class="{{ 'active' if request.endpoint == 'pdf_extract' }}">Ambil Halaman</a>
+  <a href="{{ url_for('pdf_rotate') }}" class="{{ 'active' if request.endpoint == 'pdf_rotate' }}">Putar Halaman</a>
+  <a href="{{ url_for('pdf_delete') }}" class="{{ 'active' if request.endpoint == 'pdf_delete' }}">Hapus Halaman</a>
+  <a href="{{ url_for('pdf_extract_text') }}" class="{{ 'active' if request.endpoint == 'pdf_extract_text' }}">Ambil Teks</a>
+  <a href="{{ url_for('pdf_info') }}" class="{{ 'active' if request.endpoint == 'pdf_info' }}">Info PDF</a>
+  <a href="{{ url_for('pdf_images_to_pdf') }}" class="{{ 'active' if request.endpoint == 'pdf_images_to_pdf' }}">Gambar ke PDF</a>
+  <a href="{{ url_for('pdf_to_images') }}" class="{{ 'active' if request.endpoint == 'pdf_to_images' }}">PDF ke Gambar</a>
+</div>

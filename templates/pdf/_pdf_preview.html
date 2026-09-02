@@ -1,0 +1,10 @@
+{% if result %}
+<div class="result">
+  <h2>Hasil</h2>
+  <iframe class="pdf-frame" src="{{ result.data_uri }}"></iframe>
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.data_uri }}" target="_blank">Buka di tab baru</a>
+    <a class="btn-download" href="{{ result.data_uri }}" download="{{ result.filename }}">Download PDF</a>
+  </div>
+</div>
+{% endif %}

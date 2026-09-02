@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}QR Code Generator{% endblock %}
+{% block content %}
+{{ page_head('.QR', 'QR Code Generator', 'qr') }}
+<form method="post" enctype="multipart/form-data">
+  <label for="text">Teks / URL (satu per baris untuk generate banyak sekaligus)</label>
+  <textarea id="text" name="text" placeholder="https://example.com" required></textarea>
+
+  <label for="logo">Logo (opsional, png/jpg/svg)</label>
+  <input type="file" id="logo" name="logo" accept="image/*,.svg">
+
+  <label><input type="checkbox" name="color_mode" checked> Logo berwarna (uncheck untuk grayscale)</label>
+
+  <label for="filename">Nama file (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Generate QR</button>
+  <p class="hint">1 baris → 1 QR. Lebih dari 1 baris → banyak QR sekaligus.</p>
+</form>
+
+{% if result %}
+<div class="result">
+  <h2>Hasil</h2>
+  <div class="thumb-grid">
+    {% for item in result.files %}
+    <div class="thumb">
+      {% if item.previewable %}
+      <a href="{{ item.data_uri }}" target="_blank"><img src="{{ item.data_uri }}" alt="{{ item.name }}"></a>
+      {% else %}
+      <div class="thumb-placeholder">{{ item.name.rsplit('.', 1)[-1] | upper }}</div>
+      {% endif %}
+      <span class="thumb-name">{{ item.name }}</span>
+      <a class="btn-download" href="{{ item.data_uri }}" download="{{ item.name }}">Download</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% if result.zip %}
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.zip.data_uri }}" download="{{ result.zip.name }}">Download semua (.zip)</a>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}Webm ke MP4{% endblock %}
+{% block content %}
+{{ page_head('.MP4', 'Webm ke MP4', 'film') }}
+<p>Butuh <code>ffmpeg</code> terpasang di server. File besar bisa lama karena diproses sinkron.</p>
+<form method="post" enctype="multipart/form-data">
+  <label for="webm">File .webm (bisa pilih lebih dari 1)</label>
+  <input type="file" id="webm" name="webm" accept=".webm" multiple required>
+
+  <label for="filename">Nama file (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Convert</button>
+</form>
+
+{% if result %}
+<div class="result">
+  <h2>Hasil</h2>
+  {% for item in result.files %}
+  <div style="margin-bottom:16px">
+    <video controls src="{{ item.data_uri }}"></video>
+    <div class="result-actions">
+      <span class="thumb-name">{{ item.name }} ({{ item.size }})</span>
+      <a class="btn-download" href="{{ item.data_uri }}" target="_blank">Buka di tab baru</a>
+      <a class="btn-download" href="{{ item.data_uri }}" download="{{ item.name }}">Download</a>
+    </div>
+  </div>
+  {% endfor %}
+  {% if result.zip %}
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.zip.data_uri }}" download="{{ result.zip.name }}">Download semua (.zip)</a>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

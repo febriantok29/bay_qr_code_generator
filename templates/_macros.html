@@ -1,0 +1,22 @@
+{% from "_icons.html" import icon %}
+
+{% macro tool_card(url, tag, title, description, icon_name) %}
+<a class="tool-card" href="{{ url }}">
+  <div class="tool-card-top">
+    {{ icon(icon_name, 22) }}
+    <span class="tool-tag mono">{{ tag }}</span>
+  </div>
+  <h2>{{ title }}</h2>
+  <p>{{ description }}</p>
+</a>
+{% endmacro %}
+
+{% macro page_head(tag, title, icon_name) %}
+<div class="page-head">
+  {{ icon(icon_name, 26) }}
+  <div>
+    <span class="tool-tag mono">{{ tag }}</span>
+    <h1>{{ title }}</h1>
+  </div>
+</div>
+{% endmacro %}

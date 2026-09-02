@@ -1,0 +1,44 @@
+{% macro page_grid_rotate(picker, action_url, button_label) %}
+<form method="post" action="{{ action_url }}" onsubmit="syncRotateField(this)">
+  <input type="hidden" name="stage" value="confirm">
+  <input type="hidden" name="pdf_data" value="{{ picker.pdf_b64 }}">
+  <input type="hidden" name="pdf_name" value="{{ picker.pdf_name }}">
+
+  <p class="hint">Klik halaman untuk memutar 90° tiap klik (0°→90°→180°→270°→0°), atau ketik langsung di bawah.</p>
+  <div class="page-grid">
+    {% for page in picker.pages %}
+    <div class="page-thumb" data-page="{{ page.page }}" data-angle="0" onclick="cycleAngle(this)">
+      <img src="{{ page.data_uri }}" alt="Halaman {{ page.page }}">
+      <span>{{ page.page }}</span>
+      <span class="angle-badge">0°</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <label for="rotate_field">Halaman:sudut terpilih</label>
+  <input type="text" id="rotate_field" name="rotate" placeholder="1:90 3:180">
+
+  <label for="filename_rotate">Nama file (opsional)</label>
+  <input type="text" id="filename_rotate" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">{{ button_label }}</button>
+</form>
+
+<script>
+function cycleAngle(el) {
+  const next = (parseInt(el.dataset.angle, 10) + 90) % 360;
+  el.dataset.angle = next;
+  el.querySelector('img').style.transform = `rotate(${next}deg)`;
+  el.querySelector('.angle-badge').textContent = next + '°';
+  syncRotateField(el.closest('form'));
+}
+function syncRotateField(form) {
+  const pairs = [];
+  form.querySelectorAll('.page-thumb').forEach(t => {
+    const angle = parseInt(t.dataset.angle, 10);
+    if (angle) pairs.push(t.dataset.page + ':' + angle);
+  });
+  form.querySelector('#rotate_field').value = pairs.join(' ');
+}
+</script>
+{% endmacro %}
