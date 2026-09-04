@@ -34,5 +34,23 @@
   {% endwith %}
   {% block content %}{% endblock %}
 </main>
+<div id="loading-overlay" class="loading-overlay" hidden>
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <p id="loading-text">Memproses…</p>
+    <div class="shimmer-line"></div>
+    <div class="shimmer-line short"></div>
+  </div>
+</div>
+<script>
+document.addEventListener('submit', (e) => {
+  const form = e.target;
+  if (form.tagName !== 'FORM' || e.defaultPrevented) return;
+  const overlay = document.querySelector('#loading-overlay');
+  document.querySelector('#loading-text').textContent = form.dataset.loadingText || 'Memproses…';
+  overlay.hidden = false;
+  form.querySelectorAll('button[type="submit"], button:not([type])').forEach((b) => b.disabled = true);
+});
+</script>
 </body>
 </html>
