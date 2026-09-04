@@ -358,6 +358,39 @@ video { max-width: 100%; border: 1px solid var(--border); border-radius: 4px; ba
   font-weight: 600;
 }
 
+/* ---------- Folder browse dialog ---------- */
+#browse-dialog {
+  width: min(480px, 92vw);
+  max-height: 70vh;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 20px;
+}
+
+#browse-dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+
+#browse-list {
+  max-height: 38vh;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+#browse-list li { padding: 0; border: none; margin-bottom: 4px; }
+
+#browse-list button {
+  width: 100%;
+  margin: 0;
+  text-align: left;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid transparent;
+  font-weight: 400;
+}
+
+#browse-list button:hover { border-color: var(--border); background: var(--bg); }
+
 /* ---------- Loading overlay ---------- */
 .loading-overlay {
   position: fixed;
