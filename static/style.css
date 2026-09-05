@@ -317,6 +317,24 @@ pre.text-preview {
 }
 .file-list .file-meta { font-family: var(--font-mono); color: var(--text-muted); font-size: 0.75rem; }
 
+.paste-box {
+  min-height: 100px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.paste-box:focus { outline: none; border-color: var(--accent); }
+
+.paste-box:empty:before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+}
+
 .table-scroll { overflow-x: auto; margin-top: 12px; }
 .table-scroll table { font-size: 0.8rem; }
 .table-scroll th { background: var(--surface); }

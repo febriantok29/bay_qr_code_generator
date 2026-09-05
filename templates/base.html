@@ -22,6 +22,7 @@
     <a href="{{ url_for('remove_bg_page') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('remove_bg') }}">{{ icon('layers') }} Remove BG</a>
     <a href="{{ url_for('text_to_spreadsheet_page') }}" class="{{ 'active' if request.endpoint == 'text_to_spreadsheet_page' }}">{{ icon('sheet') }} Spreadsheet</a>
     <a href="{{ url_for('webm_to_mp4_page') }}" class="{{ 'active' if request.endpoint == 'webm_to_mp4_page' }}">{{ icon('film') }} Webm→Mp4</a>
+    <a href="{{ url_for('drive_downloader_page') }}" class="{{ 'active' if request.endpoint == 'drive_downloader_page' }}">{{ icon('drive') }} Drive Downloader</a>
   </nav>
 </header>
 <main>

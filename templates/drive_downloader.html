@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}Google Drive Bulk Downloader{% endblock %}
+{% block content %}
+{{ page_head('.GDR', 'Google Drive Bulk Downloader', 'drive') }}
+<p>Select & copy beberapa sel di Google Sheets/Docs (misal kolom "BUKTI" yang isinya hyperlink ke file Drive), lalu paste (Cmd/Ctrl+V) di kotak bawah. Semua link Google Drive di baliknya akan diekstrak, didownload, dan di-zip jadi satu.</p>
+
+<form method="post" id="paste-form" data-loading-text="Mengunduh file dari Google Drive…">
+  <label for="paste-box">Paste di sini</label>
+  <div id="paste-box" class="paste-box" contenteditable="true" data-placeholder="Paste sel yang berisi link Drive di sini…"></div>
+  <p class="hint" id="link-counter">Belum ada link Drive terdeteksi.</p>
+  <input type="hidden" name="pasted_html" id="pasted-html">
+
+  <label for="filename">Nama file zip (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Download &amp; Zip</button>
+  <p class="hint">Hanya file Drive yang di-share publik/"anyone with link" yang bisa diunduh. File private/tidak bisa diakses akan dilaporkan di hasil, bukan bikin proses gagal total.</p>
+</form>
+
+{% if result %}
+{% if result.zip %}
+<div class="result">
+  <h2>{{ result.ok|length }} file berhasil diunduh</h2>
+  <div class="result-actions">
+    <a class="btn-download" href="{{ result.zip.data_uri }}" download="{{ result.zip.name }}">Download semua (.zip)</a>
+  </div>
+  <ul class="file-list">
+    {% for item in result.ok %}
+    <li>
+      <span>{{ item.name }}</span>
+      <span class="file-meta">{{ item.size_h }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{% if result.failed %}
+<div class="result">
+  <h2>{{ result.failed|length }} link gagal diunduh</h2>
+  <ul class="file-list">
+    {% for item in result.failed %}
+    <li>
+      <span>{{ item.label }}</span>
+      <span class="file-meta" style="color:var(--danger-text)">{{ item.error }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endif %}
+
+<script>
+const pasteBox = document.querySelector('#paste-box');
+const hiddenInput = document.querySelector('#pasted-html');
+const counter = document.querySelector('#link-counter');
+const DRIVE_LINK_RE = /https?:\/\/(?:drive|docs)\.google\.com[^"'\s<>]*/gi;
+
+function updateCounter() {
+  const matches = pasteBox.innerHTML.match(DRIVE_LINK_RE) || [];
+  const unique = new Set(matches.map((u) => u.replace(/&amp;/g, '&')));
+  counter.textContent = unique.size === 0
+    ? 'Belum ada link Drive terdeteksi.'
+    : unique.size + ' link Drive terdeteksi (jumlah final di-dedupe saat submit).';
+}
+
+pasteBox.addEventListener('input', updateCounter);
+pasteBox.addEventListener('paste', () => setTimeout(updateCounter, 0));
+
+document.querySelector('#paste-form').addEventListener('submit', () => {
+  hiddenInput.value = pasteBox.innerHTML;
+});
+</script>
+{% endblock %}
