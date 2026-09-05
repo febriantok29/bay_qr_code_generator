@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}Flutter Build Cleanup{% endblock %}
+{% block content %}
+{{ page_head('.CLN', 'Flutter Build Cleanup', 'trash') }}
+<p>Cari semua proyek Flutter (folder dengan <code>pubspec.yaml</code>) di bawah folder tertentu, lalu hapus artefak build (<code>build</code>, <code>.dart_tool</code>, <code>ios/Pods</code>, <code>ios/Podfile.lock</code>, <code>macos/Pods</code>, <code>macos/Podfile.lock</code>) yang ditemukan.</p>
+
+<form method="post" data-loading-text="Memindai folder…">
+  <label for="root">Folder root</label>
+  <div class="result-actions" style="margin-top:0">
+    <input type="text" id="root" name="root" value="{{ root }}" required style="width:auto;flex:1">
+    <button type="button" id="browse-btn" style="margin-top:0">Browse…</button>
+  </div>
+  <button type="submit">Scan</button>
+</form>
+
+<dialog id="browse-dialog">
+  <p class="thumb-name" id="browse-path" style="word-break:break-all"></p>
+  <div class="result-actions" style="margin-top:0">
+    <button type="button" id="browse-up">⬆ Up</button>
+  </div>
+  <ul class="file-list" id="browse-list"></ul>
+  <div class="result-actions">
+    <button type="button" id="browse-select">Pilih folder ini</button>
+    <button type="button" id="browse-cancel">Batal</button>
+  </div>
+</dialog>
+
+{% if preview %}
+<div class="result">
+  <h2>Ditemukan {{ preview.projects|length }} proyek &middot; total {{ preview.grand_total }}</h2>
+  <p>Centang artefak yang mau dihapus, lalu konfirmasi. <strong>Aksi ini permanen dan tidak bisa dibatalkan.</strong></p>
+  <form method="post" data-loading-text="Membersihkan artefak build, mohon tunggu…">
+    <input type="hidden" name="root" value="{{ root }}">
+    <input type="hidden" name="stage" value="confirm">
+    <div class="result-actions">
+      <button type="button" onclick="document.querySelectorAll('.artifact-checkbox').forEach(function(c){c.checked=true;})">Check all</button>
+      <button type="button" onclick="document.querySelectorAll('.artifact-checkbox').forEach(function(c){c.checked=false;})">Uncheck all</button>
+    </div>
+    {% for project in preview.projects %}
+    <div style="margin-bottom:16px">
+      <strong>{{ project.name }}</strong> <span class="thumb-name">({{ project.path }}, {{ project.total_size_h }})</span>
+      <ul>
+        {% for artifact in project.artifacts %}
+        <li>
+          <label>
+            <input type="checkbox" class="artifact-checkbox" name="artifact" value="{{ project.path }}|{{ artifact.relpath }}" checked>
+            {{ artifact.relpath }} ({{ artifact.size_h }})
+          </label>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+    <button type="submit">Bersihkan Sekarang</button>
+  </form>
+</div>
+{% endif %}
+
+{% if result %}
+<div class="result">
+  <h2>Selesai &middot; {{ result.total_freed }} dibebaskan</h2>
+  {% for project in result.cleaned %}
+  <div style="margin-bottom:8px">
+    <strong>{{ project.name }}</strong>: {{ project.removed|join(', ') if project.removed else 'tidak ada yang dihapus' }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<script>
+const rootInput = document.querySelector('#root');
+const dialog = document.querySelector('#browse-dialog');
+const browsePath = document.querySelector('#browse-path');
+const browseUp = document.querySelector('#browse-up');
+const browseList = document.querySelector('#browse-list');
+const browseSelect = document.querySelector('#browse-select');
+let currentPath = '';
+let parentPath = null;
+
+async function loadDir(path) {
+  browseList.innerHTML = '';
+  for (let i = 0; i < 4; i++) {
+    const li = document.createElement('li');
+    li.className = 'shimmer-line';
+    li.style.height = '18px';
+    browseList.appendChild(li);
+  }
+  const url = '{{ url_for("flutter_cleanup_browse") }}' + (path ? '?path=' + encodeURIComponent(path) : '');
+  const res = await fetch(url);
+  const data = await res.json();
+  currentPath = data.path;
+  parentPath = data.parent;
+  browsePath.textContent = currentPath;
+  browseUp.disabled = !parentPath;
+  browseList.innerHTML = '';
+  if (data.dirs.length === 0) {
+    const li = document.createElement('li');
+    li.textContent = '(tidak ada subfolder)';
+    browseList.appendChild(li);
+  }
+  for (const dir of data.dirs) {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = '📁 ' + dir.name;
+    btn.style.margin = '0';
+    btn.onclick = () => loadDir(dir.path);
+    li.appendChild(btn);
+    browseList.appendChild(li);
+  }
+}
+
+document.querySelector('#browse-btn').onclick = () => {
+  dialog.showModal();
+  loadDir(rootInput.value.trim());
+};
+browseUp.onclick = () => { if (parentPath) loadDir(parentPath); };
+browseSelect.onclick = () => { rootInput.value = currentPath; dialog.close(); };
+document.querySelector('#browse-cancel').onclick = () => dialog.close();
+</script>
+{% endblock %}

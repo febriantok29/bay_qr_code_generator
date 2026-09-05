@@ -23,6 +23,7 @@
     <a href="{{ url_for('text_to_spreadsheet_page') }}" class="{{ 'active' if request.endpoint == 'text_to_spreadsheet_page' }}">{{ icon('sheet') }} Spreadsheet</a>
     <a href="{{ url_for('webm_to_mp4_page') }}" class="{{ 'active' if request.endpoint == 'webm_to_mp4_page' }}">{{ icon('film') }} Webm→Mp4</a>
     <a href="{{ url_for('drive_downloader_page') }}" class="{{ 'active' if request.endpoint == 'drive_downloader_page' }}">{{ icon('drive') }} Drive Downloader</a>
+    <a href="{{ url_for('flutter_cleanup_page') }}" class="{{ 'active' if request.endpoint == 'flutter_cleanup_page' }}">{{ icon('trash') }} Flutter Cleanup</a>
   </nav>
 </header>
 <main>
@@ -35,5 +36,23 @@
   {% endwith %}
   {% block content %}{% endblock %}
 </main>
+<div id="loading-overlay" class="loading-overlay" hidden>
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <p id="loading-text">Memproses…</p>
+    <div class="shimmer-line"></div>
+    <div class="shimmer-line short"></div>
+  </div>
+</div>
+<script>
+document.addEventListener('submit', (e) => {
+  const form = e.target;
+  if (form.tagName !== 'FORM' || e.defaultPrevented) return;
+  const overlay = document.querySelector('#loading-overlay');
+  document.querySelector('#loading-text').textContent = form.dataset.loadingText || 'Memproses…';
+  overlay.hidden = false;
+  form.querySelectorAll('button[type="submit"], button:not([type])').forEach((b) => b.disabled = true);
+});
+</script>
 </body>
 </html>
