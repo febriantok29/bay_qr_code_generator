@@ -13,6 +13,7 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 from tools import (
     csv_merger,
     envelope_label,
+    flutter_cleanup,
     image_converter,
     pdf_utils,
     qr_generator,
@@ -739,6 +740,83 @@ def webm_to_mp4_page():
         zip_result = make_zip(outputs, tmpdir, output_filename(custom_name, "video-dikonversi", "zip"))
     tmpdir.cleanup()
     return render_template("webm_to_mp4.html", result={"files": items, "zip": zip_result})
+
+
+# ---------------- Flutter build cleanup ----------------
+@app.route("/flutter-cleanup/browse")
+def flutter_cleanup_browse():
+    from flask import jsonify
+
+    raw = request.args.get("path", "").strip()
+    try:
+        current = Path(raw).expanduser().resolve() if raw else Path.home()
+        if not current.is_dir():
+            current = Path.home()
+    except OSError:
+        current = Path.home()
+
+    try:
+        dirs = flutter_cleanup.list_subdirs(current)
+    except OSError:
+        dirs = []
+
+    parent = current.parent
+    return jsonify({
+        "path": str(current),
+        "parent": str(parent) if parent != current else None,
+        "dirs": [{"name": d.name, "path": str(d)} for d in dirs],
+    })
+
+
+@app.route("/flutter-cleanup", methods=["GET", "POST"])
+def flutter_cleanup_page():
+    if request.method == "GET":
+        return render_template("flutter_cleanup.html", root=str(Path.home() / "Data"))
+
+    root_raw = request.form.get("root", "").strip()
+    try:
+        root = Path(root_raw).expanduser().resolve()
+        if not root.is_dir():
+            raise ValueError("Folder tidak ditemukan.")
+    except (ValueError, OSError):
+        flash("Path folder tidak valid.")
+        return redirect(url_for("flutter_cleanup_page"))
+
+    if request.form.get("stage") == "confirm":
+        by_project: dict[str, list[str]] = {}
+        for item in request.form.getlist("artifact"):
+            proj_str, _, relpath = item.partition("|")
+            if proj_str and relpath:
+                by_project.setdefault(proj_str, []).append(relpath)
+
+        if not by_project:
+            flash("Tidak ada artefak yang dipilih untuk dibersihkan.")
+            return redirect(url_for("flutter_cleanup_page"))
+
+        cleaned = []
+        total_freed = 0
+        for proj_str, relpaths in by_project.items():
+            outcome = flutter_cleanup.clean_project(Path(proj_str), relpaths)
+            total_freed += outcome["freed_bytes"]
+            cleaned.append({"name": Path(proj_str).name, **outcome})
+        result = {"cleaned": cleaned, "total_freed": human_size(total_freed)}
+        return render_template("flutter_cleanup.html", root=str(root), result=result)
+
+    projects = flutter_cleanup.scan_root(root)
+    if not projects:
+        flash("Tidak ada proyek Flutter dengan artefak build ditemukan di folder itu.")
+        return redirect(url_for("flutter_cleanup_page"))
+
+    for p in projects:
+        p["total_size_h"] = human_size(p["total_size"])
+        for a in p["artifacts"]:
+            a["size_h"] = human_size(a["size"])
+    grand_total = human_size(sum(p["total_size"] for p in projects))
+    return render_template(
+        "flutter_cleanup.html",
+        root=str(root),
+        preview={"projects": projects, "grand_total": grand_total},
+    )
 
 
 if __name__ == "__main__":
