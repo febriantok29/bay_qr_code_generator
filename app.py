@@ -590,9 +590,15 @@ def pdf_images_to_pdf():
         return redirect(url_for("pdf_images_to_pdf"))
 
     tmpdir = tempfile.TemporaryDirectory()
+    seen_names: dict[str, int] = {}
     paths = []
     for f in files:
-        p = Path(tmpdir.name) / f.filename
+        name = Path(f.filename).name
+        seen_names[name] = seen_names.get(name, 0) + 1
+        n = seen_names[name]
+        stem, suffix = Path(name).stem, Path(name).suffix
+        unique_name = name if n == 1 else f"{stem}-{n}{suffix}"
+        p = Path(tmpdir.name) / unique_name
         f.save(p)
         paths.append(p)
 
