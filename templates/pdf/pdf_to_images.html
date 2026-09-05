@@ -6,8 +6,8 @@
 {% include "pdf/_tabs.html" %}
 <p>Butuh Poppler terpasang di server.</p>
 <form method="post" enctype="multipart/form-data">
-  <label>File PDF</label>
-  <input type="file" name="pdf" accept=".pdf" required>
+  <label>File PDF (bisa pilih lebih dari satu)</label>
+  <input type="file" name="pdfs" accept=".pdf" multiple required>
   <div class="row">
     <div>
       <label>Format</label>
