@@ -12,6 +12,7 @@ from flask import Flask, flash, redirect, render_template, request, url_for
 
 from tools import (
     csv_merger,
+    drive_downloader,
     envelope_label,
     flutter_cleanup,
     image_converter,
@@ -751,6 +752,36 @@ def webm_to_mp4_page():
         zip_result = make_zip(outputs, tmpdir, output_filename(custom_name, "video-dikonversi", "zip"))
     tmpdir.cleanup()
     return render_template("webm_to_mp4.html", result={"files": items, "zip": zip_result})
+
+
+# ---------------- Google Drive bulk downloader ----------------
+@app.route("/drive-downloader", methods=["GET", "POST"])
+def drive_downloader_page():
+    if request.method == "GET":
+        return render_template("drive_downloader.html")
+
+    pasted_html = request.form.get("pasted_html", "")
+    links = drive_downloader.extract_links(pasted_html)
+    if not links:
+        flash("Tidak ada link Google Drive yang terdeteksi dari teks yang di-paste.")
+        return redirect(url_for("drive_downloader_page"))
+
+    tmpdir = tempfile.TemporaryDirectory()
+    results = drive_downloader.download_all(links, Path(tmpdir.name))
+
+    ok = [r for r in results if r["ok"]]
+    failed = [r for r in results if not r["ok"]]
+    for r in ok:
+        r["size_h"] = human_size(r["size"])
+
+    zip_result = None
+    if ok:
+        zip_result = make_zip(
+            [r["path"] for r in ok], tmpdir,
+            output_filename(request.form.get("filename", ""), "drive_files", "zip"),
+        )
+    tmpdir.cleanup()
+    return render_template("drive_downloader.html", result={"ok": ok, "failed": failed, "zip": zip_result})
 
 
 # ---------------- Flutter build cleanup ----------------
