@@ -611,28 +611,39 @@ def pdf_to_images():
     if request.method == "GET":
         return render_template("pdf/pdf_to_images.html")
 
-    f = request.files.get("pdf")
+    files = [f for f in request.files.getlist("pdfs") if f.filename]
     fmt = request.form.get("fmt", "PNG")
     dpi = int(request.form.get("dpi", 150))
-    if not f or not f.filename:
-        flash("Pilih file PDF.")
+    if not files:
+        flash("Pilih minimal 1 file PDF.")
         return redirect(url_for("pdf_to_images"))
 
     tmpdir = tempfile.TemporaryDirectory()
-    in_path = Path(tmpdir.name) / f.filename
-    f.save(in_path)
+    seen_stems: dict[str, int] = {}
+    in_paths = []
+    for f in files:
+        stem = Path(f.filename).stem
+        seen_stems[stem] = seen_stems.get(stem, 0) + 1
+        n = seen_stems[stem]
+        unique_stem = stem if n == 1 else f"{stem}-{n}"
+        in_path = Path(tmpdir.name) / f"{unique_stem}{Path(f.filename).suffix}"
+        f.save(in_path)
+        in_paths.append(in_path)
+
     out_dir = Path(tmpdir.name) / "images"
     out_dir.mkdir()
 
+    outputs = []
     try:
-        outputs = pdf_utils.pdf_to_images(in_path, out_dir, fmt, dpi)
+        for in_path in in_paths:
+            outputs.extend(pdf_utils.pdf_to_images(in_path, out_dir, fmt, dpi))
     except RuntimeError as e:
         tmpdir.cleanup()
         flash(str(e))
         return redirect(url_for("pdf_to_images"))
 
     items = as_items(outputs)
-    default_base = f"{in_path.stem}_pages"
+    default_base = f"{in_paths[0].stem}_pages" if len(in_paths) == 1 else "pdf_pages"
     zip_result = make_zip(outputs, tmpdir, output_filename(request.form.get("filename", ""), default_base, "zip"))
     tmpdir.cleanup()
     return render_template("pdf/pdf_to_images.html", result={"files": items, "zip": zip_result})
