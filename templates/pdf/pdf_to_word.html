@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}PDF ke Word{% endblock %}
+{% block content %}
+{{ page_head('.PDF', 'PDF ke Word', 'text') }}
+{% include "pdf/_tabs.html" %}
+<p>Convert PDF jadi dokumen Word (.docx) yang bisa diedit. Layout kompleks (multi-kolom, tabel rumit) mungkin tidak 100% presisi.</p>
+<form method="post" enctype="multipart/form-data" data-loading-text="Mengonversi PDF ke Word…">
+  <label>File PDF (bisa pilih lebih dari satu)</label>
+  <input type="file" name="pdfs" accept=".pdf" multiple required>
+
+  <label for="filename">Nama file (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Convert ke Word</button>
+</form>
+{% include "pdf/_file_list.html" %}
+{% endblock %}

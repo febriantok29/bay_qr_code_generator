@@ -200,6 +200,20 @@ def pdf_to_images(input_path: Path, output_dir: Path, fmt: str = "PNG", dpi: int
     return outputs
 
 
+def pdf_to_docx(input_path: Path, output_path: Path) -> None:
+    """Convert a PDF to an editable Word (.docx) document. Requires pdf2docx."""
+    try:
+        from pdf2docx import Converter
+    except ImportError:
+        raise RuntimeError("pdf2docx not installed. Install with: pip install pdf2docx")
+
+    cv = Converter(str(input_path))
+    try:
+        cv.convert(str(output_path))
+    finally:
+        cv.close()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="PDF Utilities - merge, split, extract, rotate, convert",

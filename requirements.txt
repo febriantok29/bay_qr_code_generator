@@ -6,3 +6,7 @@ pandas>=2.0.0
 openpyxl>=3.1.0
 Flask>=3.0.0
 requests>=2.31.0
+pdf2docx>=0.5.6
+# pdf2docx 0.5.8 breaks on PyMuPDF>=1.24 (Rect.get_area removed); pin known-compatible version
+PyMuPDF==1.23.26
+ocrmypdf>=15.0.0

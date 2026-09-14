@@ -8,4 +8,5 @@
   <a href="{{ url_for('pdf_info') }}" class="{{ 'active' if request.endpoint == 'pdf_info' }}">Info PDF</a>
   <a href="{{ url_for('pdf_images_to_pdf') }}" class="{{ 'active' if request.endpoint == 'pdf_images_to_pdf' }}">Gambar ke PDF</a>
   <a href="{{ url_for('pdf_to_images') }}" class="{{ 'active' if request.endpoint == 'pdf_to_images' }}">PDF ke Gambar</a>
+  <a href="{{ url_for('pdf_to_word') }}" class="{{ 'active' if request.endpoint == 'pdf_to_word' }}">PDF ke Word</a>
 </div>
