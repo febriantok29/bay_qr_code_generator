@@ -20,6 +20,7 @@ from tools import (
     qr_generator,
     remove_bg_utils,
     text_to_spreadsheet,
+    video_converter,
     webm_to_mp4,
 )
 
@@ -758,6 +759,60 @@ def webm_to_mp4_page():
         zip_result = make_zip(outputs, tmpdir, output_filename(custom_name, "video-dikonversi", "zip"))
     tmpdir.cleanup()
     return render_template("webm_to_mp4.html", result={"files": items, "zip": zip_result})
+
+
+# ---------------- Video converter ----------------
+@app.route("/video-converter", methods=["GET", "POST"])
+def video_converter_page():
+    if request.method == "GET":
+        return render_template("video_converter.html", formats=video_converter.SUPPORTED_TARGET_FORMATS)
+
+    files = [f for f in request.files.getlist("videos") if f.filename]
+    target_format = request.form.get("target_format", "mp4").strip().lower()
+    if not files:
+        flash("Pilih minimal 1 file video.")
+        return redirect(url_for("video_converter_page"))
+    if not video_converter.ffmpeg_available():
+        flash("ffmpeg tidak ditemukan di server. Install dulu (mis. brew install ffmpeg).")
+        return redirect(url_for("video_converter_page"))
+
+    tmpdir = tempfile.TemporaryDirectory()
+    seen_stems: dict[str, int] = {}
+    outputs = []
+    failed = []
+    for f in files:
+        stem = Path(f.filename).stem
+        seen_stems[stem] = seen_stems.get(stem, 0) + 1
+        n = seen_stems[stem]
+        unique_stem = stem if n == 1 else f"{stem}-{n}"
+        in_path = Path(tmpdir.name) / f"{unique_stem}{Path(f.filename).suffix}"
+        f.save(in_path)
+        out_path = Path(tmpdir.name) / f"{unique_stem}.{target_format}"
+        ok, error = video_converter.convert_video(in_path, out_path, target_format)
+        if ok:
+            outputs.append(out_path)
+        else:
+            failed.append({"name": f.filename, "error": error})
+
+    if not outputs:
+        tmpdir.cleanup()
+        flash("Semua file gagal dikonversi. Cek format file & pesan error di atas.")
+        return redirect(url_for("video_converter_page"))
+
+    items = as_items(outputs)
+    custom_name = request.form.get("filename", "")
+    if len(outputs) == 1 and not failed:
+        if custom_name.strip():
+            items[0]["name"] = output_filename(custom_name, "", target_format)
+        zip_result = None
+    else:
+        zip_result = make_zip(outputs, tmpdir, output_filename(custom_name, f"video-ke-{target_format}", "zip"))
+    tmpdir.cleanup()
+    return render_template(
+        "video_converter.html",
+        formats=video_converter.SUPPORTED_TARGET_FORMATS,
+        result={"files": items, "zip": zip_result, "failed": failed},
+    )
 
 
 # ---------------- Google Drive bulk downloader ----------------
