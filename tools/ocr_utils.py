@@ -9,6 +9,10 @@ def ocr_available() -> bool:
 
 
 def ocr_to_searchable_pdf(input_path: Path, output_path: Path, language: str = "ind+eng") -> tuple[bool, str]:
+    """OCR scanned pages and normalize the whole document. ocrmypdf's default
+    output_type is "pdfa", so this also serves as a PDF -> PDF/A converter for
+    pages that already have a text layer (skip_text=True leaves them as-is
+    aside from PDF/A repackaging)."""
     try:
         import ocrmypdf
     except ImportError:
