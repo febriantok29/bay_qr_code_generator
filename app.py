@@ -699,6 +699,55 @@ def pdf_to_word():
     return render_template("pdf/pdf_to_word.html", result={"files": items, "zip": zip_result})
 
 
+@app.route("/pdf-utils/pdf-to-pdfa", methods=["GET", "POST"])
+def pdf_to_pdfa():
+    if request.method == "GET":
+        return render_template("pdf/pdf_to_pdfa.html")
+
+    files = [f for f in request.files.getlist("pdfs") if f.filename]
+    language = request.form.get("language", "ind+eng")
+    if not files:
+        flash("Pilih minimal 1 file PDF.")
+        return redirect(url_for("pdf_to_pdfa"))
+    if not ocr_utils.ocr_available():
+        flash("Tesseract/Ghostscript belum terinstall di server. Install: brew install tesseract tesseract-lang ghostscript")
+        return redirect(url_for("pdf_to_pdfa"))
+
+    tmpdir = tempfile.TemporaryDirectory()
+    seen_stems: dict[str, int] = {}
+    outputs = []
+    failed = []
+    for f in files:
+        stem = Path(f.filename).stem
+        seen_stems[stem] = seen_stems.get(stem, 0) + 1
+        n = seen_stems[stem]
+        unique_stem = stem if n == 1 else f"{stem}-{n}"
+        in_path = Path(tmpdir.name) / f"{unique_stem}{Path(f.filename).suffix}"
+        f.save(in_path)
+        out_path = Path(tmpdir.name) / f"{unique_stem}_pdfa.pdf"
+        ok, error = ocr_utils.ocr_to_searchable_pdf(in_path, out_path, language)
+        if ok:
+            outputs.append(out_path)
+        else:
+            failed.append({"name": f.filename, "error": error})
+
+    if not outputs:
+        tmpdir.cleanup()
+        flash("Semua file gagal dikonversi ke PDF/A. Cek pesan error di atas.")
+        return redirect(url_for("pdf_to_pdfa"))
+
+    items = as_items(outputs)
+    custom_name = request.form.get("filename", "")
+    if len(outputs) == 1 and not failed:
+        if custom_name.strip():
+            items[0]["name"] = output_filename(custom_name, "", "pdf")
+        zip_result = None
+    else:
+        zip_result = make_zip(outputs, tmpdir, output_filename(custom_name, "pdf-a", "zip"))
+    tmpdir.cleanup()
+    return render_template("pdf/pdf_to_pdfa.html", result={"files": items, "zip": zip_result, "failed": failed})
+
+
 # ---------------- Remove background ----------------
 @app.route("/remove-bg", methods=["GET"])
 def remove_bg_page():
