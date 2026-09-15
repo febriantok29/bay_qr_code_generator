@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import page_head %}
+{% block title %}OCR{% endblock %}
+{% block content %}
+{{ page_head('.OCR', 'OCR (Scan/Foto ke PDF Searchable)', 'text') }}
+<p>Upload PDF hasil scan atau foto dokumen (JPG/PNG) yang isinya cuma gambar (belum bisa di-search/copy teksnya). Hasilnya PDF baru yang teksnya sudah bisa di-search &amp; di-copy, tapi tampilannya tetap sama seperti gambar aslinya.</p>
+<p>Butuh <code>tesseract</code> + <code>ghostscript</code> terpasang di server (<code>brew install tesseract tesseract-lang ghostscript</code>). File besar/banyak bisa lama karena diproses sinkron.</p>
+<form method="post" enctype="multipart/form-data" data-loading-text="Memproses OCR, mohon tunggu…">
+  <label for="files">File PDF/gambar (bisa pilih lebih dari 1)</label>
+  <input type="file" id="files" name="files" accept=".pdf,image/*" multiple required>
+
+  <label for="language">Bahasa dokumen</label>
+  <select id="language" name="language">
+    <option value="ind+eng">Indonesia + Inggris</option>
+    <option value="ind">Indonesia</option>
+    <option value="eng">Inggris</option>
+  </select>
+
+  <label for="filename">Nama file (opsional)</label>
+  <input type="text" id="filename" name="filename" placeholder="Kosongkan untuk nama otomatis">
+
+  <button type="submit">Jalankan OCR</button>
+</form>
+{% include "pdf/_file_list.html" %}
+{% if result and result.failed %}
+<div class="result">
+  <h3>Gagal di-OCR</h3>
+  <ul class="file-list">
+    {% for item in result.failed %}
+    <li><span>{{ item.name }}</span> <span class="file-meta" style="color:var(--danger-text)">{{ item.error }}</span></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endblock %}

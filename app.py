@@ -16,6 +16,7 @@ from tools import (
     envelope_label,
     flutter_cleanup,
     image_converter,
+    ocr_utils,
     pdf_utils,
     qr_generator,
     remove_bg_utils,
@@ -657,6 +658,47 @@ def pdf_to_images():
     return render_template("pdf/pdf_to_images.html", result={"files": items, "zip": zip_result})
 
 
+@app.route("/pdf-utils/pdf-to-word", methods=["GET", "POST"])
+def pdf_to_word():
+    if request.method == "GET":
+        return render_template("pdf/pdf_to_word.html")
+
+    files = [f for f in request.files.getlist("pdfs") if f.filename]
+    if not files:
+        flash("Pilih minimal 1 file PDF.")
+        return redirect(url_for("pdf_to_word"))
+
+    tmpdir = tempfile.TemporaryDirectory()
+    seen_stems: dict[str, int] = {}
+    outputs = []
+    try:
+        for f in files:
+            stem = Path(f.filename).stem
+            seen_stems[stem] = seen_stems.get(stem, 0) + 1
+            n = seen_stems[stem]
+            unique_stem = stem if n == 1 else f"{stem}-{n}"
+            in_path = Path(tmpdir.name) / f"{unique_stem}{Path(f.filename).suffix}"
+            f.save(in_path)
+            out_path = Path(tmpdir.name) / f"{unique_stem}.docx"
+            pdf_utils.pdf_to_docx(in_path, out_path)
+            outputs.append(out_path)
+    except RuntimeError as e:
+        tmpdir.cleanup()
+        flash(str(e))
+        return redirect(url_for("pdf_to_word"))
+
+    items = as_items(outputs)
+    custom_name = request.form.get("filename", "")
+    if len(outputs) == 1:
+        if custom_name.strip():
+            items[0]["name"] = output_filename(custom_name, "", "docx")
+        zip_result = None
+    else:
+        zip_result = make_zip(outputs, tmpdir, output_filename(custom_name, "pdf-ke-word", "zip"))
+    tmpdir.cleanup()
+    return render_template("pdf/pdf_to_word.html", result={"files": items, "zip": zip_result})
+
+
 # ---------------- Remove background ----------------
 @app.route("/remove-bg", methods=["GET"])
 def remove_bg_page():
@@ -813,6 +855,62 @@ def video_converter_page():
         formats=video_converter.SUPPORTED_TARGET_FORMATS,
         result={"files": items, "zip": zip_result, "failed": failed},
     )
+
+
+# ---------------- OCR ----------------
+@app.route("/ocr", methods=["GET", "POST"])
+def ocr_page():
+    if request.method == "GET":
+        return render_template("ocr.html")
+
+    files = [f for f in request.files.getlist("files") if f.filename]
+    language = request.form.get("language", "ind+eng")
+    if not files:
+        flash("Pilih minimal 1 file (PDF atau gambar hasil scan/foto).")
+        return redirect(url_for("ocr_page"))
+    if not ocr_utils.ocr_available():
+        flash("Tesseract/Ghostscript belum terinstall di server. Install: brew install tesseract tesseract-lang ghostscript")
+        return redirect(url_for("ocr_page"))
+
+    tmpdir = tempfile.TemporaryDirectory()
+    seen_stems: dict[str, int] = {}
+    outputs = []
+    failed = []
+    for f in files:
+        stem = Path(f.filename).stem
+        seen_stems[stem] = seen_stems.get(stem, 0) + 1
+        n = seen_stems[stem]
+        unique_stem = stem if n == 1 else f"{stem}-{n}"
+        in_path = Path(tmpdir.name) / f"{unique_stem}{Path(f.filename).suffix}"
+        f.save(in_path)
+
+        if in_path.suffix.lower() != ".pdf":
+            normalized_path = Path(tmpdir.name) / f"{unique_stem}_normalized.pdf"
+            pdf_utils.images_to_pdf([in_path], normalized_path)
+            in_path = normalized_path
+
+        out_path = Path(tmpdir.name) / f"{unique_stem}_ocr.pdf"
+        ok, error = ocr_utils.ocr_to_searchable_pdf(in_path, out_path, language)
+        if ok:
+            outputs.append(out_path)
+        else:
+            failed.append({"name": f.filename, "error": error})
+
+    if not outputs:
+        tmpdir.cleanup()
+        flash("Semua file gagal di-OCR. Cek format file & pesan error di atas.")
+        return redirect(url_for("ocr_page"))
+
+    items = as_items(outputs)
+    custom_name = request.form.get("filename", "")
+    if len(outputs) == 1 and not failed:
+        if custom_name.strip():
+            items[0]["name"] = output_filename(custom_name, "", "pdf")
+        zip_result = None
+    else:
+        zip_result = make_zip(outputs, tmpdir, output_filename(custom_name, "hasil-ocr", "zip"))
+    tmpdir.cleanup()
+    return render_template("ocr.html", result={"files": items, "zip": zip_result, "failed": failed})
 
 
 # ---------------- Google Drive bulk downloader ----------------
