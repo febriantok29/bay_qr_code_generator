@@ -4,9 +4,14 @@
   <ul class="file-list">
     {% for item in result.files %}
     <li>
-      <span>{{ item.name }}</span>
-      <span class="file-meta">{{ item.size }}</span>
-      <a class="btn-download" href="{{ item.data_uri }}" download="{{ item.name }}">Download</a>
+      {% if item.name.lower().endswith('.pdf') %}
+      <iframe class="file-list-preview" src="{{ item.data_uri }}"></iframe>
+      {% endif %}
+      <div class="file-list-row">
+        <span>{{ item.name }}</span>
+        <span class="file-meta">{{ item.size }}</span>
+        <a class="btn-download" href="{{ item.data_uri }}" download="{{ item.name }}">Download</a>
+      </div>
     </li>
     {% endfor %}
   </ul>
